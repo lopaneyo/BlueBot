@@ -15,9 +15,10 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Set;
+//import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
-//this is a comment
+
     ArrayAdapter<String> listAdapter;
     Button connectNew;
     ListView listView;
