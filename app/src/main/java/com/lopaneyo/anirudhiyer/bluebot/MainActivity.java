@@ -8,19 +8,17 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Set;
-//import java.util.Set;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
 
     ArrayAdapter<String> listAdapter;
-    Button connectNew;
     ListView listView;
     BluetoothAdapter btAdapter;
     Set<BluetoothDevice> devicesArray;
@@ -42,13 +40,24 @@ public class MainActivity extends AppCompatActivity {
         }
         else{
             if (!btAdapter.isEnabled()){
-                Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                startActivityForResult(intent, 1);
+                turnOnBT();
             }
 
             getPairedDevices();
+            startDiscovery();
         }
 
+    }
+
+    private void startDiscovery() {
+
+        btAdapter.cancelDiscovery();
+        btAdapter.startDiscovery();
+    }
+
+    private void turnOnBT() {
+        Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+        startActivityForResult(intent, 1);
     }
 
     private void getPairedDevices() {
@@ -63,8 +72,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void init() {
 
-        connectNew = (Button)findViewById(R.id.bConnectNew);
         listView = (ListView)findViewById(R.id.listView);
+        listView.setOnItemClickListener(this);
         listAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1,0);
         listView.setAdapter(listAdapter);
         btAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -88,7 +97,9 @@ public class MainActivity extends AppCompatActivity {
 
                 }
                 else if(BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)){
-
+                    if (btAdapter.getState() == btAdapter.STATE_OFF){
+                        turnOnBT();
+                    }
                 }
             }
         };
@@ -99,6 +110,12 @@ public class MainActivity extends AppCompatActivity {
             filter = new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
         registerReceiver(receiver, filter);
             filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+    }
+
+    protected void onPause() {
+
+        super.onPause();
+        unregisterReceiver(receiver);
     }
 
     protected void onActivtyResult(int requestCode, int resultCode, Intent data) {
