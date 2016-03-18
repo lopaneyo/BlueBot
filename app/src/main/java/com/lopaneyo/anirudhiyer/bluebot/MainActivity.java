@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -73,7 +74,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private void init() {
 
         listView = (ListView)findViewById(R.id.listView);
-        listView.setOnItemClickListener(this);
+        listView.setOnItemClickListener((AdapterView.OnItemClickListener) this);
         listAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1,0);
         listView.setAdapter(listAdapter);
         btAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -87,7 +88,19 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                 if (BluetoothDevice.ACTION_FOUND.equals(action)){
                     BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                    listAdapter.add(device.getName() + "\n" + device.getAddress());
+
+                            String s = "";
+                            for(int a = 0; a < pairedDevices.size(); a++){
+                                if(device.getName().equals(pairedDevices.get(a))){
+
+                                    s = "Paired";
+                                    break;
+
+                        }
+                    }
+
+                    listAdapter.add(device.getName()+"("+s+")");
+
                 }
 
                 else if(BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)){
@@ -97,6 +110,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                 }
                 else if(BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)){
+
                     if (btAdapter.getState() == btAdapter.STATE_OFF){
                         turnOnBT();
                     }
@@ -124,6 +138,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         if (resultCode == RESULT_CANCELED){
             Toast.makeText(getApplicationContext(), "Bluetooth must be enabled to continue", Toast.LENGTH_SHORT).show();
             finish();
+        }
+    }
+
+    public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
+
+        if(listAdapter.getItem(arg2).contains("Paired")) {
+
+            Toast.makeText(getApplicationContext(), "Device is paired", Toast.LENGTH_SHORT).show();
+        }
+        else {
+            Toast.makeText(getApplicationContext(), "Device is not paired", Toast.LENGTH_SHORT).show();
         }
     }
 
